@@ -29,14 +29,22 @@ final class PersistenceMapper {
     }
 
     static TradeObligation toDomain(ObligationJpaEntity e) {
-        // BUG: payer/payee swapped when hydrating domain objects for list/netting.
-        return PartyMappingBug.toDomainSwapped(e);
+        // Read side must mirror toEntity: payer stays payer, payee stays payee.
+        return new TradeObligation(
+                e.getObligationId(),
+                e.getPayerMemberId(),
+                e.getPayeeMemberId(),
+                e.getCurrency(),
+                e.getAmount(),
+                e.getTradeDate(),
+                e.getSettleDate(),
+                e.getStatus(),
+                e.getNettingRunId());
     }
 
     static ObligationJpaEntity toEntity(TradeObligation o) {
         ObligationJpaEntity e = new ObligationJpaEntity();
         e.setObligationId(o.getObligationId());
-        // writes stay correct — only reads are swapped, which makes the bug asymmetric.
         e.setPayerMemberId(o.getPayerMemberId());
         e.setPayeeMemberId(o.getPayeeMemberId());
         e.setCurrency(o.getCurrency());
